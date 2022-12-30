@@ -1,0 +1,386 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"><title>DL和PyTorch入门 - BP神经网络（一） | miuGrey的杂物箱</title><meta name="keywords" content="机器学习,深度学习,神经网络,PyTorch"><meta name="author" content="miuGrey"><meta name="copyright" content="miuGrey"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="Intro大三上的后半个学期接触到GAN之后，突然开始对深度学习开始感兴趣，自己也开始多多少少了解了点相关的知识，玩了点现成的代码，甚至想过接触一下CV和计算摄影的相关领域。后来发现自己的脑子似乎不太支持自己去深入研究这些东西，于是还是决定把它当做一个工具，自己蛮学一学。 大三下DM的大作业是：在ML和DL领域选择一种算法，实现具体应用，并进行优化。优化算法这种事情我们显然是搞不来，于是选择在研究">
+<meta property="og:type" content="article">
+<meta property="og:title" content="DL和PyTorch入门 - BP神经网络（一）">
+<meta property="og:url" content="https://miugrey.com.cn/2022/07/16/DL%E5%92%8CPyTorch%E5%85%A5%E9%97%A8+-+%E4%B8%80%E4%B8%AA%E7%AE%80%E5%8D%95%E7%9A%84BP%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9C/index.html">
+<meta property="og:site_name" content="miuGrey的杂物箱">
+<meta property="og:description" content="Intro大三上的后半个学期接触到GAN之后，突然开始对深度学习开始感兴趣，自己也开始多多少少了解了点相关的知识，玩了点现成的代码，甚至想过接触一下CV和计算摄影的相关领域。后来发现自己的脑子似乎不太支持自己去深入研究这些东西，于是还是决定把它当做一个工具，自己蛮学一学。 大三下DM的大作业是：在ML和DL领域选择一种算法，实现具体应用，并进行优化。优化算法这种事情我们显然是搞不来，于是选择在研究">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://miugrey.com.cn/2022/07/16/DL%E5%92%8CPyTorch%E5%85%A5%E9%97%A8+-+%E4%B8%80%E4%B8%AA%E7%AE%80%E5%8D%95%E7%9A%84BP%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9C/title.webp">
+<meta property="article:published_time" content="2022-07-16T13:02:31.000Z">
+<meta property="article:modified_time" content="2022-09-04T15:47:10.314Z">
+<meta property="article:author" content="miuGrey">
+<meta property="article:tag" content="Deep Learning">
+<meta property="article:tag" content="PyTorch">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://miugrey.com.cn/2022/07/16/DL%E5%92%8CPyTorch%E5%85%A5%E9%97%A8+-+%E4%B8%80%E4%B8%AA%E7%AE%80%E5%8D%95%E7%9A%84BP%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9C/title.webp"><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="https://miugrey.com.cn/2022/07/16/DL%E5%92%8CPyTorch%E5%85%A5%E9%97%A8+-+%E4%B8%80%E4%B8%AA%E7%AE%80%E5%8D%95%E7%9A%84BP%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9C/"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://unpkg.com/@fortawesome/fontawesome-free/css/all.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://unpkg.com/node-snackbar/dist/snackbar.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://unpkg.com/@fancyapps/ui/dist/fancybox.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.xml","preload":false,"languages":{"hits_empty":"找不到您查询的内容：${query}"}},
+  translate: {"defaultEncoding":2,"translateDelay":0,"msgToTraditionalChinese":"繁","msgToSimplifiedChinese":"簡"},
+  noticeOutdate: {"limitDay":500,"position":"top","messagePrev":"这篇文章是","messageNext":"天之前更新的，其中内容可能已经过时…"},
+  highlight: {"plugin":"highlighjs","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":200},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: true,
+    post: false
+  },
+  runtime: '天',
+  date_suffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: {"limitCount":1,"languages":{"author":"作者: miuGrey","link":"链接: ","source":"来源: miuGrey的杂物箱","info":"著作权归作者所有。商业转载请联系作者获得授权，非商业转载请注明出处。"}},
+  lightbox: 'fancybox',
+  Snackbar: {"chs_to_cht":"你已切换为繁体","cht_to_chs":"你已切换为简体","day_to_night":"你已切换为深色模式","night_to_day":"你已切换为浅色模式","bgLight":"#49b1f5","bgDark":"#1f1f1f","position":"bottom-left"},
+  source: {
+    justifiedGallery: {
+      js: 'https://unpkg.com/flickr-justified-gallery/dist/fjGallery.min.js',
+      css: 'https://unpkg.com/flickr-justified-gallery/dist/fjGallery.css'
+    }
+  },
+  isPhotoFigcaption: true,
+  islazyload: false,
+  isAnchor: true
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'DL和PyTorch入门 - BP神经网络（一）',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2022-09-04 23:47:10'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(win=>{
+    win.saveToLocal = {
+      set: function setWithExpiry(key, value, ttl) {
+        if (ttl === 0) return
+        const now = new Date()
+        const expiryDay = ttl * 86400000
+        const item = {
+          value: value,
+          expiry: now.getTime() + expiryDay,
+        }
+        localStorage.setItem(key, JSON.stringify(item))
+      },
+
+      get: function getWithExpiry(key) {
+        const itemStr = localStorage.getItem(key)
+
+        if (!itemStr) {
+          return undefined
+        }
+        const item = JSON.parse(itemStr)
+        const now = new Date()
+
+        if (now.getTime() > item.expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return item.value
+      }
+    }
+  
+    win.getScript = url => new Promise((resolve, reject) => {
+      const script = document.createElement('script')
+      script.src = url
+      script.async = true
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    })
+  
+      win.activateDarkMode = function () {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = function () {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+          const isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches
+          const isLightMode = window.matchMedia('(prefers-color-scheme: light)').matches
+          const isNotSpecified = window.matchMedia('(prefers-color-scheme: no-preference)').matches
+          const hasNoSupport = !isDarkMode && !isLightMode && !isNotSpecified
+
+          if (t === undefined) {
+            if (isLightMode) activateLightMode()
+            else if (isDarkMode) activateDarkMode()
+            else if (isNotSpecified || hasNoSupport) {
+              const now = new Date()
+              const hour = now.getHours()
+              const isNight = hour <= 6 || hour >= 18
+              isNight ? activateDarkMode() : activateLightMode()
+            }
+            window.matchMedia('(prefers-color-scheme: dark)').addListener(function (e) {
+              if (saveToLocal.get('theme') === undefined) {
+                e.matches ? activateDarkMode() : activateLightMode()
+              }
+            })
+          } else if (t === 'light') activateLightMode()
+          else activateDarkMode()
+        
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+    const detectApple = () => {
+      if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+    })(window)</script><script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6106285619802028" crossorigin="anonymous"></script><meta name="generator" content="Hexo 6.3.0">
+<style>.github-emoji { position: relative; display: inline-block; width: 1.2em; min-height: 1.2em; overflow: hidden; vertical-align: top; color: transparent; }  .github-emoji > span { position: relative; z-index: 10; }  .github-emoji img, .github-emoji .fancybox { margin: 0 !important; padding: 0 !important; border: none !important; outline: none !important; text-decoration: none !important; user-select: none !important; cursor: auto !important; }  .github-emoji img { height: 1.2em !important; width: 1.2em !important; position: absolute !important; left: 50% !important; top: 50% !important; transform: translate(-50%, -50%) !important; user-select: none !important; cursor: auto !important; } .github-emoji-fallback { color: inherit; } .github-emoji-fallback img { opacity: 0 !important; }</style>
+</head><body><div id="loading-box"><div class="loading-left-bg"></div><div class="loading-right-bg"></div><div class="spinner-box"><div class="configure-border-1"><div class="configure-core"></div></div><div class="configure-border-2"><div class="configure-core"></div></div><div class="loading-word">加载中...</div></div></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src="/img/avatar.png" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">5</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">8</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">6</div></a></div><hr/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 时间轴</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> Tags</span></a></div><div class="menus_item"><a class="site-page" href="/artitalk/"><i class="fa-fw fas fa-message"></i><span> 说说</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 相关链接</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-wrench"></i><span> 更新日志</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url('/2022/07/16/DL%E5%92%8CPyTorch%E5%85%A5%E9%97%A8+-+%E4%B8%80%E4%B8%AA%E7%AE%80%E5%8D%95%E7%9A%84BP%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9C/title.webp')"><nav id="nav"><span id="blog_name"><a id="site-name" href="/">miuGrey的杂物箱</a></span><div id="menus"><div id="search-button"><a class="site-page social-icon search"><i class="fas fa-search fa-fw"></i><span> 搜索</span></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 时间轴</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> Tags</span></a></div><div class="menus_item"><a class="site-page" href="/artitalk/"><i class="fa-fw fas fa-message"></i><span> 说说</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 相关链接</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-wrench"></i><span> 更新日志</span></a></div></div><div id="toggle-menu"><a class="site-page"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">DL和PyTorch入门 - BP神经网络（一）</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2022-07-16T13:02:31.000Z" title="发表于 2022-07-16 21:02:31">2022-07-16</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2022-09-04T15:47:10.314Z" title="更新于 2022-09-04 23:47:10">2022-09-04</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0%E4%B8%8E%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0/">机器学习与深度学习</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">字数总计:</span><span class="word-count">4k</span><span class="post-meta-separator">|</span><i class="far fa-clock fa-fw post-meta-icon"></i><span class="post-meta-label">阅读时长:</span><span>14分钟</span></span><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title="DL和PyTorch入门 - BP神经网络（一）"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">阅读量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><h1 id="Intro"><a href="#Intro" class="headerlink" title="Intro"></a>Intro</h1><p>大三上的后半个学期接触到GAN之后，突然开始对深度学习开始感兴趣，自己也开始多多少少了解了点相关的知识，玩了点现成的代码，甚至想过接触一下CV和计算摄影的相关领域。后来发现自己的脑子似乎不太支持自己去深入研究这些东西，于是还是决定把它当做一个工具，自己蛮学一学。</p>
+<p>大三下DM的大作业是：在ML和DL领域选择一种算法，实现具体应用，并进行优化。优化算法这种事情我们显然是搞不来，于是选择在研究方法上进行创新。（虽然最后创了个我到现在还觉得很离谱的方法出来）借此机会，总算是开始独立使用PyTorch搭建神经网络并进行调参。</p>
+<p>所以最开始，还是先来回顾一下一个最基本的BP神经网络搭建的过程。本文侧重于训练的过程与PyTorch的使用上，而非BP神经网络的详细原理。之后有有机会复习ML算法的话再聊聊吧（怎么又给自己挖坑了）</p>
+<p>在学校借了一本PyTorch的书，虽然有点老但是也还算可以凑活着看。在9月份还书之前慢慢啃一点吧。</p>
+<h1 id="Content"><a href="#Content" class="headerlink" title="Content"></a>Content</h1><ol>
+<li>构建一个神经网络</li>
+<li>训练参数的准备</li>
+<li>训练数据的准备</li>
+<li>训练过程的实现</li>
+<li>梯度下降的优化</li>
+<li>最后的代码包装</li>
+</ol>
+<h2 id="构建一个神经网络"><a href="#构建一个神经网络" class="headerlink" title="构建一个神经网络"></a>构建一个神经网络</h2><p>在Torch中定义网络是一件很简单的事情，只需要用到torch.nn中的 Sequential() 便可以定义一个网络中每一层的具体类型与输入输出。这里以一个简单的三层神经网络为例，包含线性的输入与输出层，以及一个使用ReLU作为激活函数的隐层。Torch囊括了主流的激活函数，如Sigmoid, tanh和RuLU等。通常，为了更快的收敛，我们会在隐层使用RuLU函数。</p>
+<figure class="highlight python"><table><tbody><tr><td class="code"><pre><span class="line">model = torch.nn.Sequential(</span><br><span class="line">    torch.nn.Linear(input_data, hidden_layer), <span class="comment"># 输入层到隐层</span></span><br><span class="line">    torch.nn.ReLU(), <span class="comment"># 隐层</span></span><br><span class="line">    torch.nn.Linear(hidden_layer, output_data) <span class="comment"># 隐层到输出层</span></span><br><span class="line">)</span><br></pre></td></tr></tbody></table></figure>
+
+<p>这里我们将输入节点个数（也就是特征个数）设为1个，隐层节点个数设为10个，最后输出的节点个数为1个：</p>
+<figure class="highlight python"><table><tbody><tr><td class="code"><pre><span class="line">input_layer = <span class="number">1</span></span><br><span class="line">hidden_layer = <span class="number">10</span></span><br><span class="line">output_layer = <span class="number">1</span></span><br></pre></td></tr></tbody></table></figure>
+
+<p>这样我们就得到了一个复杂度非常低的网络。低到离谱。</p>
+<p>节点的个数是影响网络性能的参数之一。对于输入输出层，其节点个数往往由我们的数据决定；对于隐层，我们通常可以根据以下公式来确定其个数：<br>$$<br>(input + ouput)^2 + radn(0,10)<br>$$<br>接下来，我们需要定义这个网络的损失函数。torch.nn中支持的损失函数类型有MSELoss, L1Loss和CrossEntropyLoss等，各自适用于处理不同类型的问题。可以在这里找到更多详细的信息：<a target="_blank" rel="noopener" href="https://www.w3cschool.cn/article/78828381.html">pytorch中常用的损失函数用法说明 | w3c笔记 (w3cschool.cn)</a>。当然去官方的Document找找看肯定是更完整准确的。</p>
+<p>这里我们先以MSE作为我们的损失函数：</p>
+<figure class="highlight python"><table><tbody><tr><td class="code"><pre><span class="line">loss_fn = torch.nn.MSELoss()</span><br></pre></td></tr></tbody></table></figure>
+
+<p>之后将预测值与实际值传入即可计算损失：</p>
+<figure class="highlight python"><table><tbody><tr><td class="code"><pre><span class="line">loss = loss_fn(y_pred, y)</span><br></pre></td></tr></tbody></table></figure>
+
+<p>至此，一个神经网络的基本框架搭建完毕，下一步我们便可以开始为训练做准备。以下是第一部分的完整代码：</p>
+<figure class="highlight python"><table><tbody><tr><td class="code"><pre><span class="line"><span class="keyword">import</span> torch</span><br><span class="line"></span><br><span class="line">input_data = <span class="number">1</span></span><br><span class="line">hidden_layer = <span class="number">10</span></span><br><span class="line">output_data = <span class="number">1</span></span><br><span class="line"></span><br><span class="line">model = torch.nn.Sequential(</span><br><span class="line">    torch.nn.Linear(input_layer, hidden_layer), <span class="comment"># 输入层到隐层</span></span><br><span class="line">    torch.nn.ReLU(), <span class="comment"># 隐层</span></span><br><span class="line">    torch.nn.Linear(hidden_layer, output_layer) <span class="comment"># 隐层到输出层</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line">loss_fn = torch.nn.MSELoss()</span><br><span class="line"></span><br></pre></td></tr></tbody></table></figure>
+
+
+
+<h2 id="训练参数的准备"><a href="#训练参数的准备" class="headerlink" title="训练参数的准备"></a>训练参数的准备</h2><p>基于BPNN的原理，我们需要在训练时完成误差的计算，并根据我们定义的学习率，来控制每一次训练中梯度下降的步长。学习率的控制是一门很复杂的学问，不过一般来说，只要不出现步子迈大了收敛不了的情况就行，但是过小的学习率也会导致收敛过慢。</p>
+<p>这里我们定义学习率为1e-4：</p>
+<figure class="highlight python"><table><tbody><tr><td class="code"><pre><span class="line">lr = <span class="number">1e-4</span></span><br></pre></td></tr></tbody></table></figure>
+
+<p>训练时，Batch（批）与Epoch（次）也是调起来很玄学的两个参数，影响着训练时间与训练结果的准确性。当整个训练集经过网络处理一次后，我们将这个过程成为一个epoch；由于一个epoch中处理样本可能过于庞大，我们需要将其分为多个小块，也就是batches. 每个batch中的内容从训练集中随机抽取，使用小部分样本对模型权重新进更新。训练一个batch的过程，就是我们常听的“一次Iteration（迭代）”。</p>
+<p>那么Epoch和Batch是如何影响训练结果的呢？</p>
+<p>Batch size主要决定了收敛速度与随机梯度的噪声，太大不好，太小也不好。太小会延缓训练时间，并且导致过拟合；太大会导致梯度下降得不够到位，误差过大，同时占用大量的内存。（曾经在尝试玩GAN的时候经常因为batch太大炸显存）所以需要经过多次尝试来确定batch size.</p>
+<p>Epoch主要影响拟合的程度。使用多个Epoch的原因在于，仅有一次完整的训练往往会导致欠拟合，但过多的Epoch也会导致过拟合。</p>
+<p>那么，究竟要怎么取到合适的Batch size和epoch呢？</p>
+<p>其实没有正确的答案，因为对于不同的训练集，我们使用的参数往往是不同的。通常来说，batch size一般不会低于16，我们可以根据这个限制，与样本的大小，去确定batch size；对于epoch的数量，emmm…反正我是自己感受的hhhhh，用很大的值试一试，很小的的值也试一试，根据训练的情况去选择一个合适的值。</p>
+<p>反正只要避免出问题就好了。真的很玄学。</p>
+<p>代码实现上，epoch只要用for循环来控制就好了，batch则需要写一个专门用来分割的小东西，以将划分好的batches返回进训练过程中:</p>
+<figure class="highlight python"><table><tbody><tr><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">batch_loader</span>(<span class="params">x, y, batch_size=<span class="number">64</span></span>):</span><br><span class="line">    <span class="string">""" </span></span><br><span class="line"><span class="string">    Args:</span></span><br><span class="line"><span class="string">        x: 训练数据 Tensor or ndarray</span></span><br><span class="line"><span class="string">        y: 训练数据标签 Tensor or ndarray</span></span><br><span class="line"><span class="string">        batch_size: Mini-batch 大小</span></span><br><span class="line"><span class="string">    Returns:</span></span><br><span class="line"><span class="string">        x_batch, y_batch: mini-batch 数据对</span></span><br><span class="line"><span class="string">    """</span></span><br><span class="line">    data_size = x.shape[<span class="number">0</span>]</span><br><span class="line">    permutation = np.random.permutation(data_size)</span><br><span class="line">    <span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">0</span>, data_size, batch_size):</span><br><span class="line">        batch_permutation = permutation[i: i+batch_size]</span><br><span class="line">        <span class="keyword">yield</span> x[batch_permutation], y[batch_permutation]</span><br></pre></td></tr></tbody></table></figure>
+
+<p>(CtrlC CtrlV来的)</p>
+<p>Epoch我们暂定给1000个吧，batch size给个100看看.</p>
+<figure class="highlight python"><table><tbody><tr><td class="code"><pre><span class="line">num_epoch = <span class="number">1000</span></span><br><span class="line">batch_size = <span class="number">100</span></span><br></pre></td></tr></tbody></table></figure>
+
+
+
+<h2 id="训练数据的准备"><a href="#训练数据的准备" class="headerlink" title="训练数据的准备"></a>训练数据的准备</h2><p>正常来说，我们需要将数据导入，并进行训练集与测试集的分割。这里为了省点事情，我们就暂且不进行划分。我们使用以下公式，随机生成一组0~1之间的随机数作为Y，并引入一些噪声：</p>
+<figure class="highlight python"><table><tbody><tr><td class="code"><pre><span class="line"><span class="keyword">import</span> numpy <span class="keyword">as</span> np</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">F</span>(<span class="params">x</span>):</span><br><span class="line">	<span class="keyword">return</span> <span class="number">1</span> / (<span class="number">1</span> + np.exp(x))</span><br><span class="line"></span><br><span class="line">X_BOUND = [-<span class="number">10</span>, <span class="number">10</span>]</span><br><span class="line">data_length = <span class="number">1000</span></span><br><span class="line">noise = <span class="number">0.1</span></span><br><span class="line">x = X_BOUND[<span class="number">0</span>] + (X_BOUND[<span class="number">1</span>]-X_BOUND[<span class="number">0</span>]) * np.random.rand(data_length)</span><br><span class="line">y = F(x) + noise * np.random.rand(data_length)</span><br></pre></td></tr></tbody></table></figure>
+
+
+
+<img src="/2022/07/16/DL%E5%92%8CPyTorch%E5%85%A5%E9%97%A8+-+%E4%B8%80%E4%B8%AA%E7%AE%80%E5%8D%95%E7%9A%84BP%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9C/data_graph.png" class="" title="我们的数据分布">
+
+<p>接着，我们需要将其包装为tensor（张量）：</p>
+<figure class="highlight python"><table><tbody><tr><td class="code"><pre><span class="line">x_tensor = torch.from_numpy(x).unsqueeze_(-<span class="number">1</span>).<span class="built_in">float</span>()</span><br><span class="line">y_tensor = torch.from_numpy(y).unsqueeze_(-<span class="number">1</span>).<span class="built_in">float</span>()</span><br></pre></td></tr></tbody></table></figure>
+
+<p>正常来说，这一步需要做的事情很多：如果是现实中的数据，我们还需要进行归一化的处理，以消除各变量之间量级差距所带来的误差；如果是分类变量，我们需要将每一种分类独立出来，作为一个0/1的dummy变量，等等。之后我会在下一篇DL文章中，用我当时大作业的数据进行演示。</p>
+<h2 id="训练过程的实现"><a href="#训练过程的实现" class="headerlink" title="训练过程的实现"></a>训练过程的实现</h2><p>刚刚提到，我们将会用for循环来实现对epoches的训练，因此我们需要将具体的训练过程装进这个for中。训练一个BP神经网络的流程大致包含了误差计算、反向传播与梯度计算，更新权重这几个步骤。这些步骤都可以很轻易的用PyTorch实现。</p>
+<p>首先，我们需要建立一个用于记录误差的列表，以便我们在每次迭代后能够记录当前的损失，并在训练完一个epoch之后进行平均，供我们评估模型的性能。当然，在这之后，需要清空这个列表，开始新的一轮训练。</p>
+<p>这是一个大框架：</p>
+<figure class="highlight python"><table><tbody><tr><td class="code"><pre><span class="line">loss_list = []  <span class="comment"># 存放每次训练误差的list</span></span><br><span class="line"><span class="keyword">for</span> e <span class="keyword">in</span> <span class="built_in">range</span>(num_epoch):  <span class="comment"># 控制epoch</span></span><br><span class="line">	loss_list.clear()  <span class="comment"># 清空列表</span></span><br><span class="line">	<span class="keyword">for</span> i, (x_batch, y_batch) <span class="keyword">in</span> <span class="built_in">enumerate</span>(batch_loader(x_tensor, y_tensor, batch_size)):  <span class="comment"># batch</span></span><br><span class="line">	</span><br><span class="line">		<span class="keyword">pass</span>  <span class="comment"># 具体的训练步骤</span></span><br><span class="line">		</span><br><span class="line">		loss_list.append( <span class="comment"># loss ) # 记录该次误差</span></span><br><span class="line">	</span><br><span class="line">	<span class="built_in">print</span>(np.mean(loss_list)) <span class="comment"># 误差求平均</span></span><br><span class="line">	</span><br></pre></td></tr></tbody></table></figure>
+
+<p>接下来，我们需要将具体的训练内容放进for中。</p>
+<p>第一件事情，当然是将x输入网络中，进行预测。</p>
+<figure class="highlight python"><table><tbody><tr><td class="code"><pre><span class="line">y_pred = model(x_batch) <span class="comment"># 预测</span></span><br></pre></td></tr></tbody></table></figure>
+
+<p>接着，我们用刚刚提到过的那句代码计算损失，并执行反向传播：</p>
+<figure class="highlight python"><table><tbody><tr><td class="code"><pre><span class="line">loss = loss_fn(y_pred, y_batch) <span class="comment"># 计算损失</span></span><br><span class="line">model.zero_grad() <span class="comment"># 将模型中参数的梯度设为0</span></span><br><span class="line">loss.backward() <span class="comment"># 反向传播</span></span><br></pre></td></tr></tbody></table></figure>
+
+<p>要想实现梯度下降并更新权重，我们需要从模型中提取参数，并执行更新的公式：</p>
+<figure class="highlight python"><table><tbody><tr><td class="code"><pre><span class="line"><span class="keyword">for</span> param <span class="keyword">in</span> model.parameters():</span><br><span class="line">	param.data -= param.grad.data * lr</span><br></pre></td></tr></tbody></table></figure>
+
+<p>紧接着记录一下本次迭代的误差：</p>
+<figure class="highlight python"><table><tbody><tr><td class="code"><pre><span class="line">loss_list.append(loss.item())</span><br></pre></td></tr></tbody></table></figure>
+
+<p>在训练完一个epoch之后，计算一下MSE：</p>
+<figure class="highlight python"><table><tbody><tr><td class="code"><pre><span class="line">np.mean(loss_recorder)</span><br></pre></td></tr></tbody></table></figure>
+
+<p>至此，我们已经初步搭建好训练的逻辑与步骤了。以下是完整代码：</p>
+<figure class="highlight python"><table><tbody><tr><td class="code"><pre><span class="line"><span class="comment"># import torch</span></span><br><span class="line"><span class="keyword">import</span> numpy <span class="keyword">as</span> np</span><br><span class="line"><span class="keyword">from</span> matplotlib <span class="keyword">import</span> pyplot <span class="keyword">as</span> plt</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">batch_loader</span>(<span class="params">x, y, batch_size=<span class="number">64</span></span>):</span><br><span class="line">    <span class="string">""" </span></span><br><span class="line"><span class="string">    Args:</span></span><br><span class="line"><span class="string">        x: 训练数据 Tensor or ndarray</span></span><br><span class="line"><span class="string">        y: 训练数据标签 Tensor or ndarray</span></span><br><span class="line"><span class="string">        batch_size: Mini-batch 大小</span></span><br><span class="line"><span class="string">    Returns:</span></span><br><span class="line"><span class="string">        x_batch, y_batch: mini-batch 数据对</span></span><br><span class="line"><span class="string">    """</span></span><br><span class="line">    data_size = x.shape[<span class="number">0</span>]</span><br><span class="line">    permutation = np.random.permutation(data_size)</span><br><span class="line">    <span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">0</span>, data_size, batch_size):</span><br><span class="line">        batch_permutation = permutation[i: i+batch_size]</span><br><span class="line">        <span class="keyword">yield</span> x[batch_permutation], y[batch_permutation]</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">F</span>(<span class="params">x</span>):</span><br><span class="line">    <span class="keyword">return</span> <span class="number">1</span> / (<span class="number">1</span> + np.exp(x))</span><br><span class="line"></span><br><span class="line">X_BOUND = [-<span class="number">10</span>, <span class="number">10</span>]</span><br><span class="line">data_length = <span class="number">1000</span></span><br><span class="line">noise = <span class="number">0.1</span></span><br><span class="line">x = X_BOUND[<span class="number">0</span>] + (X_BOUND[<span class="number">1</span>]-X_BOUND[<span class="number">0</span>]) * np.random.rand(data_length)</span><br><span class="line">y = F(x) + noise * np.random.rand(data_length)</span><br><span class="line"></span><br><span class="line">x_tensor = torch.from_numpy(x).unsqueeze_(-<span class="number">1</span>).<span class="built_in">float</span>()</span><br><span class="line">y_tensor = torch.from_numpy(y).unsqueeze_(-<span class="number">1</span>).<span class="built_in">float</span>()</span><br><span class="line">        </span><br><span class="line">input_layer = <span class="number">1</span></span><br><span class="line">hidden_layer = <span class="number">10</span></span><br><span class="line">output_layer = <span class="number">1</span></span><br><span class="line"></span><br><span class="line">model = torch.nn.Sequential(</span><br><span class="line">    torch.nn.Linear(input_layer, hidden_layer), <span class="comment"># 输入层到隐层</span></span><br><span class="line">    torch.nn.ReLU(), <span class="comment"># 隐层</span></span><br><span class="line">    torch.nn.Linear(hidden_layer, output_layer) <span class="comment"># 隐层到输出层</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line">loss_fn = torch.nn.MSELoss()</span><br><span class="line"></span><br><span class="line">num_epoch = <span class="number">1000</span></span><br><span class="line">batch_size = <span class="number">100</span></span><br><span class="line">lr = <span class="number">1e-3</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 开始训练</span></span><br><span class="line">loss_list = []  <span class="comment"># 存放每次训练误差的list</span></span><br><span class="line"><span class="keyword">for</span> e <span class="keyword">in</span> <span class="built_in">range</span>(num_epoch):  <span class="comment"># 控制epoch</span></span><br><span class="line">    loss_list.clear()  <span class="comment"># 清空列表</span></span><br><span class="line">    <span class="keyword">for</span> i, (x_batch, y_batch) <span class="keyword">in</span> <span class="built_in">enumerate</span>(batch_loader(x_tensor, y_tensor, batch_size)):  <span class="comment"># batch</span></span><br><span class="line">        y_pred = model(x_batch) <span class="comment"># 预测</span></span><br><span class="line">        loss = loss_fn(y_pred, y_batch) <span class="comment"># 计算损失</span></span><br><span class="line">        model.zero_grad() <span class="comment"># 将模型中参数的梯度设为0</span></span><br><span class="line">        loss.backward() <span class="comment"># 反向传播</span></span><br><span class="line">        </span><br><span class="line">        <span class="comment"># 更新权重</span></span><br><span class="line">        <span class="keyword">for</span> param <span class="keyword">in</span> model.parameters():</span><br><span class="line">            param.data -= param.grad.data * lr</span><br><span class="line">            </span><br><span class="line">        loss_list.append(loss.item())</span><br><span class="line">        </span><br><span class="line">        <span class="built_in">print</span>(<span class="string">'batch {} loss {}'</span>.<span class="built_in">format</span>(i+<span class="number">1</span>, loss.item()), end=<span class="string">'\r'</span>)</span><br><span class="line">        </span><br><span class="line">    <span class="built_in">print</span>(<span class="string">'epoch {} loss {}'</span>.<span class="built_in">format</span>(e+<span class="number">1</span>, np.mean(loss_list)))</span><br></pre></td></tr></tbody></table></figure>
+
+<p>训练完毕之后，我们可以通过输出的结果看到误差不断减少的过程。如果想直观地看到训练成果，我们可以将原数据集传入训练完毕的模型中进行预测，并将原数据的曲线和预测结果的曲线一起plot出来进行对比：</p>
+<figure class="highlight python"><table><tbody><tr><td class="code"><pre><span class="line"><span class="comment"># Plot</span></span><br><span class="line">x_axis = np.linspace(*X_BOUND, <span class="number">200</span>)</span><br><span class="line">plt.plot(x_axis, F(x_axis))</span><br><span class="line">plt.scatter(x, np.squeeze(</span><br><span class="line">    model(x_tensor).detach().cpu().numpy(), -<span class="number">1</span>), color=<span class="string">'r'</span>)</span><br><span class="line">plt.show()</span><br></pre></td></tr></tbody></table></figure>
+
+<img src="/2022/07/16/DL%E5%92%8CPyTorch%E5%85%A5%E9%97%A8+-+%E4%B8%80%E4%B8%AA%E7%AE%80%E5%8D%95%E7%9A%84BP%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9C/compare_graph_sdg.png" class="" title="Epoch = 1000, Batch size = 100, Learning rate = 1e-3">
+
+<p>红色曲线为预测结果，蓝色曲线为原数据，可以看到还是很接近的。如果我们增加epoch、提高learning rate，或是增大batch size，训练误差也会随之减小。</p>
+<img src="/2022/07/16/DL%E5%92%8CPyTorch%E5%85%A5%E9%97%A8+-+%E4%B8%80%E4%B8%AA%E7%AE%80%E5%8D%95%E7%9A%84BP%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9C/compare_graph_sdg_more_epoch.png" class="" title="Epoch = 5000, Batch size = 100, Learning rate = 1e-3">
+
+<p>当然，这只是训练误差，并不代表模型真正的预测性能。想要正确评判模型的预测性能，还是需要引入测试集进行验证。之后再说啦~</p>
+<h2 id="梯度下降的优化"><a href="#梯度下降的优化" class="headerlink" title="梯度下降的优化"></a>梯度下降的优化</h2><p>某种意义上来说，BP神经网络是一种局部搜索算法，这使他在训练过程中不可避免地会陷入局部最优，从而导致训练结果不佳。此外，收敛速度慢也是它的缺点之一。为了解决这些问题，我们可以从两方面入手：优化初始权重 ，与优化梯度下降的算法。前者通常与在GA、PSO等算法的辅助下进行，之后有机会也会展示一下具体的做法；后者则可以利用PyTorch自带的Optimizer (torch.optim) 进行优化。torch.optim中包含了多种优化算法，如Adam, AdamW 和 Adamax等，当然也包含了我们刚刚的随机梯度下降方法SGD。若要使用torch.optim, 我们需要确定一种优化算法，然后将模型的参数与学习率传进去：</p>
+<figure class="highlight python"><table><tbody><tr><td class="code"><pre><span class="line">optimizer = torch.optim.SGD(model.parameters(), lr=lr)</span><br></pre></td></tr></tbody></table></figure>
+
+<p>同时，将刚刚训练过程中的部分代码进行替换： </p>
+<figure class="highlight python"><table><tbody><tr><td class="code"><pre><span class="line"><span class="comment"># model.zero_grad()</span></span><br><span class="line">optimizer.zero_grad() <span class="comment"># 将模型中参数的梯度设为0</span></span><br><span class="line"></span><br><span class="line"><span class="string">'''</span></span><br><span class="line"><span class="string">for param in model.parameters():</span></span><br><span class="line"><span class="string">	param.data -= param.grad.data * lr</span></span><br><span class="line"><span class="string">'''</span></span><br><span class="line">optimizer.step() <span class="comment"># 更新权重</span></span><br></pre></td></tr></tbody></table></figure>
+
+<p>再次执行代码，我们可以得到一个和之前性能几乎相同的模型。</p>
+<p>如果此时我们将SGD换为Adam，并依然使用Epoch = 1000, Batch_size = 100, Learning_rate = 1e-3这套参数：</p>
+<figure class="highlight python"><table><tbody><tr><td class="code"><pre><span class="line">optimizer = torch.optim.Adam(model.parameters(), lr=lr)</span><br></pre></td></tr></tbody></table></figure>
+
+<img src="/2022/07/16/DL%E5%92%8CPyTorch%E5%85%A5%E9%97%A8+-+%E4%B8%80%E4%B8%AA%E7%AE%80%E5%8D%95%E7%9A%84BP%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9C/compare_graph_adam.png" class="" title="Epoch = 1000, Batch size = 100, Learning rate = 1e-3, with Adam optimizer">
+
+<p>一步到位。</p>
+<p>即使此时我们将Learning_rate减小到1e-4：</p>
+<img src="/2022/07/16/DL%E5%92%8CPyTorch%E5%85%A5%E9%97%A8+-+%E4%B8%80%E4%B8%AA%E7%AE%80%E5%8D%95%E7%9A%84BP%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9C/compare_graph_adam_less_lr.png" class="" title="Epoch = 1000, Batch size = 100, Learning rate = 1e-4, with Adam optimizer">
+
+<p>结果还是会比刚刚SGD好不少的。</p>
+<h2 id="最后的代码包装"><a href="#最后的代码包装" class="headerlink" title="最后的代码包装"></a>最后的代码包装</h2><p>至此，我们已经得到了一个最简单的神经网络模型，并初步体验了调参的……呃用什么形容词词好呢……反正就是一件神奇又折磨人的事情……</p>
+<p>接来下我们要做的，就是把我们的代码包装成一个类，方便我们之后的调用。直接上代码：</p>
+<figure class="highlight python"><table><tbody><tr><td class="code"><pre><span class="line"><span class="keyword">import</span> torch</span><br><span class="line"><span class="keyword">import</span> numpy <span class="keyword">as</span> np</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">BPNN</span>():</span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">__init__</span>(<span class="params">self, input_layer, hidden_layer, output_layer, x, y, epoch, batch_size, lr, log</span>):</span><br><span class="line">        self.input_layer = input_layer  <span class="comment"># 输入层节点个数</span></span><br><span class="line">        self.hidden_layer = hidden_layer  <span class="comment"># 隐层节点个数</span></span><br><span class="line">        self.output_layer = output_layer  <span class="comment"># 输出层节点个数</span></span><br><span class="line">        self.x = x  <span class="comment"># 自变量</span></span><br><span class="line">        self.y = y  <span class="comment"># 因变量</span></span><br><span class="line">        self.epoch = epoch</span><br><span class="line">        self.batch_size = batch_size</span><br><span class="line">        self.lr = lr  <span class="comment"># Learning Rate</span></span><br><span class="line">        self.log = log  <span class="comment"># 是否输出记录，T/F</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">batch_loader</span>(<span class="params">self, x, y, batch_size=<span class="number">64</span></span>):</span><br><span class="line">        data_size = x.shape[<span class="number">0</span>]</span><br><span class="line">        permutation = np.random.permutation(data_size)</span><br><span class="line">        <span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">0</span>, data_size, batch_size):</span><br><span class="line">            batch_permutation = permutation[i: i + batch_size]</span><br><span class="line">            <span class="keyword">yield</span> x[batch_permutation], y[batch_permutation]</span><br><span class="line"></span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">build_model</span>(<span class="params">self</span>):</span><br><span class="line">        input_layer = self.input_layer</span><br><span class="line">        hidden_layer = self.hidden_layer</span><br><span class="line">        output_layer = self.output_layer</span><br><span class="line"></span><br><span class="line">        model = torch.nn.Sequential(</span><br><span class="line">            torch.nn.Linear(input_layer, hidden_layer),  <span class="comment"># 输入层到隐层</span></span><br><span class="line">            torch.nn.ReLU(),  <span class="comment"># 隐层</span></span><br><span class="line">            torch.nn.Linear(hidden_layer, output_layer)  <span class="comment"># 隐层到输出层</span></span><br><span class="line">        )</span><br><span class="line"></span><br><span class="line">        loss_fn = torch.nn.MSELoss()</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> model, loss_fn</span><br><span class="line"></span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">train_model</span>(<span class="params">self</span>):</span><br><span class="line">        num_epoch = self.epoch</span><br><span class="line">        batch_size = self.batch_size</span><br><span class="line">        lr = self.lr</span><br><span class="line">        x = self.x</span><br><span class="line">        y = self.y</span><br><span class="line"></span><br><span class="line">        model, loss_fn = self.build_model()</span><br><span class="line"></span><br><span class="line">        optimizer = torch.optim.Adam(model.parameters(), lr=lr)</span><br><span class="line"></span><br><span class="line">        loss_list = []  <span class="comment"># 存放每次训练误差的list</span></span><br><span class="line">        <span class="keyword">for</span> e <span class="keyword">in</span> <span class="built_in">range</span>(num_epoch):  <span class="comment"># 控制epoch</span></span><br><span class="line">            loss_list.clear()  <span class="comment"># 清空列表</span></span><br><span class="line">            <span class="keyword">for</span> i, (x_batch, y_batch) <span class="keyword">in</span> <span class="built_in">enumerate</span>(self.batch_loader(x, y, batch_size)):  <span class="comment"># batch</span></span><br><span class="line">                y_pred = model(x_batch)  <span class="comment"># 预测</span></span><br><span class="line">                loss = loss_fn(y_pred, y_batch)  <span class="comment"># 计算损失</span></span><br><span class="line">                optimizer.zero_grad()  <span class="comment"># 将优化器中参数的梯度设为0</span></span><br><span class="line">                loss.backward()  <span class="comment"># 反向传播</span></span><br><span class="line">                optimizer.step()  <span class="comment"># 更新权重</span></span><br><span class="line">                loss_list.append(loss.item())</span><br><span class="line">                <span class="keyword">if</span> self.log:</span><br><span class="line">                    <span class="built_in">print</span>(<span class="string">'batch {} loss {}'</span>.<span class="built_in">format</span>(i + <span class="number">1</span>, loss.item()), end=<span class="string">'\r'</span>)</span><br><span class="line">            <span class="keyword">if</span> self.log:</span><br><span class="line">                <span class="built_in">print</span>(<span class="string">'epoch {} loss {}'</span>.<span class="built_in">format</span>(e + <span class="number">1</span>, np.mean(loss_list)))</span><br><span class="line">        <span class="keyword">return</span> model, np.mean(loss_list)</span><br><span class="line">    </span><br></pre></td></tr></tbody></table></figure>
+
+<p>将以上代码保存为BPNN.py, 然后在同一目录下新建一个.py文件，调用BPNN.py写好主程序:</p>
+<figure class="highlight python"><table><tbody><tr><td class="code"><pre><span class="line"><span class="keyword">from</span> BPNN <span class="keyword">import</span> BPNN</span><br><span class="line"><span class="keyword">import</span> torch</span><br><span class="line"><span class="keyword">import</span> numpy <span class="keyword">as</span> np</span><br><span class="line"><span class="keyword">from</span> matplotlib <span class="keyword">import</span> pyplot <span class="keyword">as</span> plt</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">F</span>(<span class="params">x</span>):</span><br><span class="line">    <span class="keyword">return</span> <span class="number">1</span> / (<span class="number">1</span> + np.exp(x))</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">"__main__"</span>:</span><br><span class="line">    X_BOUND = [-<span class="number">10</span>, <span class="number">10</span>]</span><br><span class="line">    data_length = <span class="number">1000</span></span><br><span class="line">    noise = <span class="number">0.1</span></span><br><span class="line">    x = X_BOUND[<span class="number">0</span>] + (X_BOUND[<span class="number">1</span>] - X_BOUND[<span class="number">0</span>]) * np.random.rand(data_length)</span><br><span class="line">    y = F(x) + noise * np.random.rand(data_length)</span><br><span class="line"></span><br><span class="line">    x_tensor = torch.from_numpy(x).unsqueeze_(-<span class="number">1</span>).<span class="built_in">float</span>()</span><br><span class="line">    y_tensor = torch.from_numpy(y).unsqueeze_(-<span class="number">1</span>).<span class="built_in">float</span>()</span><br><span class="line"></span><br><span class="line">    <span class="comment"># Define</span></span><br><span class="line">    MyBPNN = BPNN(input_layer=<span class="number">1</span>, hidden_layer=<span class="number">10</span>, output_layer=<span class="number">1</span>,</span><br><span class="line">                  x=x_tensor, y=y_tensor,</span><br><span class="line">                  epoch=<span class="number">1000</span>, batch_size=<span class="number">100</span>, lr=<span class="number">1e-4</span>,</span><br><span class="line">                  log=<span class="literal">True</span>)</span><br><span class="line"></span><br><span class="line">    <span class="comment"># Train</span></span><br><span class="line">    model, loss = MyBPNN.train_model()  <span class="comment"># 将</span></span><br><span class="line"></span><br><span class="line">    <span class="built_in">print</span>(<span class="string">'MSE: '</span>, loss)</span><br><span class="line"></span><br><span class="line">    <span class="comment"># Plot</span></span><br><span class="line">    x_axis = np.linspace(*X_BOUND, <span class="number">200</span>)</span><br><span class="line">    plt.plot(x_axis, F(x_axis))</span><br><span class="line">    plt.scatter(x, np.squeeze(</span><br><span class="line">        model(x_tensor).detach().cpu().numpy(), -<span class="number">1</span>), color=<span class="string">'r'</span>)</span><br><span class="line">    plt.show()</span><br><span class="line"></span><br></pre></td></tr></tbody></table></figure>
+
+<h1 id="挖坑"><a href="#挖坑" class="headerlink" title="挖坑"></a>挖坑</h1><p>BP神经网路部分的下一篇文章会将以上神经网络应用在空气质量预测上（数据源：<a target="_blank" rel="noopener" href="https://archive-beta.ics.uci.edu/ml/datasets/beijing+multi+site+air+quality+data">Beijing Multi-Site Air-Quality Data - UCI Machine Learning Repository</a>），加入数据的预处理、训练集测试集的划分，以及最后的验证上。</p>
+<p>下下篇文章则会将网络与GA、PSO算法结合（使用 <a target="_blank" rel="noopener" href="https://scikit-opt.github.io/scikit-opt/#/zh/README">scikit-opt</a>），实现对神经网络性能的进一步优化。</p>
+<h1 id="References"><a href="#References" class="headerlink" title="References"></a>References</h1><p><a target="_blank" rel="noopener" href="https://www.pytorch123.com/SecondSection/neural_networks/">PyTorch 神经网络 - PyTorch官方教程中文版 (pytorch123.com)</a></p>
+<p><a target="_blank" rel="noopener" href="https://github.com/cattidea/bp-ga-pytorch">cattidea/bp-ga-pytorch: bp-ga algorithm implemented by pytorch (github.com)</a></p>
+<p><a target="_blank" rel="noopener" href="https://blog.csdn.net/weixin_38754799/article/details/109831970">(20条消息) 训练神经网络 | 三个基本概念：Epoch, Batch, Iteration_OnlyCoding…的博客-CSDN博客</a></p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="https://miuGrey.com.cn">miuGrey</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="https://miugrey.com.cn/2022/07/16/DL%E5%92%8CPyTorch%E5%85%A5%E9%97%A8+-+%E4%B8%80%E4%B8%AA%E7%AE%80%E5%8D%95%E7%9A%84BP%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9C/">https://miugrey.com.cn/2022/07/16/DL%E5%92%8CPyTorch%E5%85%A5%E9%97%A8+-+%E4%B8%80%E4%B8%AA%E7%AE%80%E5%8D%95%E7%9A%84BP%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9C/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="https://miuGrey.com.cn" target="_blank">miuGrey的杂物箱</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/Deep-Learning/">Deep Learning</a><a class="post-meta__tags" href="/tags/PyTorch/">PyTorch</a></div><div class="post_share"><div class="social-share" data-image="/2022/07/16/DL%E5%92%8CPyTorch%E5%85%A5%E9%97%A8+-+%E4%B8%80%E4%B8%AA%E7%AE%80%E5%8D%95%E7%9A%84BP%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9C/title.webp" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://unpkg.com/butterfly-extsrc/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://unpkg.com/butterfly-extsrc/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="prev-post pull-left"><a href="/2022/06/25/hello-world/"><img class="prev-cover" src="/2022/06/25/hello-world/image-20220625172216420.png" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post"><div class="pagination-info"><div class="label">上一篇</div><div class="prev_info">Hello World!</div></div></a></div><div class="next-post pull-right"><a href="/2022/09/28/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95+with+Python+-+%E5%85%A5%E9%97%A8%E5%92%8C%E5%A4%8D%E5%81%A5/"><img class="next-cover" src="/2022/09/28/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95+with+Python+-+%E5%85%A5%E9%97%A8%E5%92%8C%E5%A4%8D%E5%81%A5/title.webp" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">数据结构与算法 with Python - 入门和复健</div></div></a></div></nav><hr/><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="fas fa-comments fa-fw"></i><span> 评论</span></div></div><div class="comment-wrap"><div><div class="vcomment" id="vcomment"></div></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src="/img/avatar.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">miuGrey</div><div class="author-info__description">啥都写点</div></div><div class="card-info-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">5</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">8</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">6</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/tonymiugrey"><i class="fab fa-github"></i><span>Follow Me</span></a><div class="card-info-social-icons is-center"><a class="social-icon" href="https://github.com/tonymiugrey" target="_blank" title="Github"><i class="fab fa-github"></i></a><a class="social-icon" href="https://space.bilibili.com/14467462?spm_id_from=333.1007.0.0" target="_blank" title="Bilibili"><i class="fab fa-bilibili"></i></a></div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#Intro"><span class="toc-number">1.</span> <span class="toc-text">Intro</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Content"><span class="toc-number">2.</span> <span class="toc-text">Content</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%9E%84%E5%BB%BA%E4%B8%80%E4%B8%AA%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9C"><span class="toc-number">2.1.</span> <span class="toc-text">构建一个神经网络</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%AE%AD%E7%BB%83%E5%8F%82%E6%95%B0%E7%9A%84%E5%87%86%E5%A4%87"><span class="toc-number">2.2.</span> <span class="toc-text">训练参数的准备</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%AE%AD%E7%BB%83%E6%95%B0%E6%8D%AE%E7%9A%84%E5%87%86%E5%A4%87"><span class="toc-number">2.3.</span> <span class="toc-text">训练数据的准备</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%AE%AD%E7%BB%83%E8%BF%87%E7%A8%8B%E7%9A%84%E5%AE%9E%E7%8E%B0"><span class="toc-number">2.4.</span> <span class="toc-text">训练过程的实现</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%A2%AF%E5%BA%A6%E4%B8%8B%E9%99%8D%E7%9A%84%E4%BC%98%E5%8C%96"><span class="toc-number">2.5.</span> <span class="toc-text">梯度下降的优化</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%9C%80%E5%90%8E%E7%9A%84%E4%BB%A3%E7%A0%81%E5%8C%85%E8%A3%85"><span class="toc-number">2.6.</span> <span class="toc-text">最后的代码包装</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%8C%96%E5%9D%91"><span class="toc-number">3.</span> <span class="toc-text">挖坑</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#References"><span class="toc-number">4.</span> <span class="toc-text">References</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/2022/11/29/Python%E4%B8%8E%E6%95%B0%E6%8D%AE%E5%88%86%E6%9E%90%E5%BA%94%E7%94%A8-Intro/" title="Python与数据分析应用-Intro"><img src="/2022/11/29/Python%E4%B8%8E%E6%95%B0%E6%8D%AE%E5%88%86%E6%9E%90%E5%BA%94%E7%94%A8-Intro/Jupyter.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Python与数据分析应用-Intro"/></a><div class="content"><a class="title" href="/2022/11/29/Python%E4%B8%8E%E6%95%B0%E6%8D%AE%E5%88%86%E6%9E%90%E5%BA%94%E7%94%A8-Intro/" title="Python与数据分析应用-Intro">Python与数据分析应用-Intro</a><time datetime="2022-11-29T10:56:58.000Z" title="发表于 2022-11-29 18:56:58">2022-11-29</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2022/09/28/SwiftUI%E8%87%AA%E5%AD%A6+-+%E4%BB%8E%E4%B8%80%E4%B8%AA%E8%8F%9C%E8%B0%B1APP%E5%BC%80%E5%A7%8B/" title="SwiftUI自学 - 从一个菜谱APP开始"><img src="/2022/09/28/SwiftUI%E8%87%AA%E5%AD%A6+-+%E4%BB%8E%E4%B8%80%E4%B8%AA%E8%8F%9C%E8%B0%B1APP%E5%BC%80%E5%A7%8B/title.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="SwiftUI自学 - 从一个菜谱APP开始"/></a><div class="content"><a class="title" href="/2022/09/28/SwiftUI%E8%87%AA%E5%AD%A6+-+%E4%BB%8E%E4%B8%80%E4%B8%AA%E8%8F%9C%E8%B0%B1APP%E5%BC%80%E5%A7%8B/" title="SwiftUI自学 - 从一个菜谱APP开始">SwiftUI自学 - 从一个菜谱APP开始</a><time datetime="2022-09-27T18:58:31.000Z" title="发表于 2022-09-28 02:58:31">2022-09-28</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2022/09/28/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95+with+Python+-+%E5%85%A5%E9%97%A8%E5%92%8C%E5%A4%8D%E5%81%A5/" title="数据结构与算法 with Python - 入门和复健"><img src="/2022/09/28/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95+with+Python+-+%E5%85%A5%E9%97%A8%E5%92%8C%E5%A4%8D%E5%81%A5/title.webp" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="数据结构与算法 with Python - 入门和复健"/></a><div class="content"><a class="title" href="/2022/09/28/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95+with+Python+-+%E5%85%A5%E9%97%A8%E5%92%8C%E5%A4%8D%E5%81%A5/" title="数据结构与算法 with Python - 入门和复健">数据结构与算法 with Python - 入门和复健</a><time datetime="2022-09-27T17:41:31.000Z" title="发表于 2022-09-28 01:41:31">2022-09-28</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2022/07/16/DL%E5%92%8CPyTorch%E5%85%A5%E9%97%A8+-+%E4%B8%80%E4%B8%AA%E7%AE%80%E5%8D%95%E7%9A%84BP%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9C/" title="DL和PyTorch入门 - BP神经网络（一）"><img src="/2022/07/16/DL%E5%92%8CPyTorch%E5%85%A5%E9%97%A8+-+%E4%B8%80%E4%B8%AA%E7%AE%80%E5%8D%95%E7%9A%84BP%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9C/title.webp" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="DL和PyTorch入门 - BP神经网络（一）"/></a><div class="content"><a class="title" href="/2022/07/16/DL%E5%92%8CPyTorch%E5%85%A5%E9%97%A8+-+%E4%B8%80%E4%B8%AA%E7%AE%80%E5%8D%95%E7%9A%84BP%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9C/" title="DL和PyTorch入门 - BP神经网络（一）">DL和PyTorch入门 - BP神经网络（一）</a><time datetime="2022-07-16T13:02:31.000Z" title="发表于 2022-07-16 21:02:31">2022-07-16</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2022/06/25/hello-world/" title="Hello World!"><img src="/2022/06/25/hello-world/image-20220625172216420.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Hello World!"/></a><div class="content"><a class="title" href="/2022/06/25/hello-world/" title="Hello World!">Hello World!</a><time datetime="2022-06-25T06:27:31.000Z" title="发表于 2022-06-25 14:27:31">2022-06-25</time></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2020 - 2022 By miuGrey</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="translateLink" type="button" title="简繁转换">繁</button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><a id="to_comment" href="#post-comment" title="直达评论"><i class="fas fa-comments"></i></a><button id="go-up" type="button" title="回到顶部"><i class="fas fa-arrow-up"></i></button></div></div><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><span id="loading-status"></span><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="is-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据库加载中</span></div><div class="search-wrap"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"/></div></div><hr/><div id="local-search-results"></div></div></div><div id="search-mask"></div></div><div><script src="https://unpkg.com/hexo-theme-butterfly/source/js/utils.js"></script><script src="https://unpkg.com/hexo-theme-butterfly/source/js/main.js"></script><script src="https://unpkg.com/hexo-theme-butterfly/source/js/tw_cn.js"></script><script src="https://unpkg.com/@fancyapps/ui/dist/fancybox.umd.js"></script><script src="https://unpkg.com/instant.page/instantpage.js" type="module"></script><script src="https://unpkg.com/node-snackbar/dist/snackbar.min.js"></script><script src="https://unpkg.com/hexo-theme-butterfly/source/js/search/local-search.js"></script><script>var preloader = {
+  endLoading: () => {
+    document.body.style.overflow = 'auto';
+    document.getElementById('loading-box').classList.add("loaded")
+  },
+  initLoading: () => {
+    document.body.style.overflow = '';
+    document.getElementById('loading-box').classList.remove("loaded")
+
+  }
+}
+window.addEventListener('load',preloader.endLoading())</script><div class="js-pjax"><script>if (!window.MathJax) {
+  window.MathJax = {
+    tex: {
+      inlineMath: [ ['$','$'], ["\\(","\\)"]],
+      tags: 'ams'
+    },
+    chtml: {
+      scale: 1.2
+    },
+    options: {
+      renderActions: {
+        findScript: [10, doc => {
+          for (const node of document.querySelectorAll('script[type^="math/tex"]')) {
+            const display = !!node.type.match(/; *mode=display/)
+            const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display)
+            const text = document.createTextNode('')
+            node.parentNode.replaceChild(text, node)
+            math.start = {node: text, delim: '', n: 0}
+            math.end = {node: text, delim: '', n: 0}
+            doc.math.push(math)
+          }
+        }, ''],
+        insertScript: [200, () => {
+          document.querySelectorAll('mjx-container:not\([display]\)').forEach(node => {
+            const target = node.parentNode
+            if (target.nodeName.toLowerCase() === 'li') {
+              target.parentNode.classList.add('has-jax')
+            } else {
+              target.classList.add('has-jax')
+            }
+          });
+        }, '', false]
+      }
+    }
+  }
+  
+  const script = document.createElement('script')
+  script.src = 'https://unpkg.com/mathjax/es5/tex-mml-chtml.js'
+  script.id = 'MathJax-script'
+  script.async = true
+  document.head.appendChild(script)
+} else {
+  MathJax.startup.document.state(0)
+  MathJax.texReset()
+  MathJax.typeset()
+}</script><script>function loadValine () {
+  function initValine () {
+    const valine = new Valine(Object.assign({
+      el: '#vcomment',
+      appId: '7Mf5445VnskaNm6Uew8KfxmK-MdYXbMMI',
+      appKey: '69iSp7ZzWKPDw3P7oZxnNaxo',
+      avatar: 'mp',
+      serverURLs: 'https://blog-comment-server.miugrey.com.cn',
+      emojiMaps: "",
+      path: window.location.pathname,
+      visitor: false
+    }, null))
+  }
+
+  if (typeof Valine === 'function') initValine() 
+  else getScript('https://unpkg.com/valine/dist/Valine.min.js').then(initValine)
+}
+
+if ('Valine' === 'Valine' || !false) {
+  if (false) btf.loadComment(document.getElementById('vcomment'),loadValine)
+  else setTimeout(loadValine, 0)
+} else {
+  function loadOtherComment () {
+    loadValine()
+  }
+}</script></div><script src="https://unpkg.com/butterfly-extsrc/dist/activate-power-mode.min.js"></script><script>POWERMODE.colorful = true;
+POWERMODE.shake = false;
+POWERMODE.mobile = false;
+document.body.addEventListener('input', POWERMODE);
+</script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div><script>(function (w, d, s, id) {
+            if (typeof (w.webpushr) !== 'undefined') return; w.webpushr = w.webpushr || function () { (w.webpushr.q = w.webpushr.q || []).push(arguments) }; var js, fjs = d.getElementsByTagName(s)[0]; js = d.createElement(s); js.id = id; js.async = 1; js.src = "https://cdn.webpushr.com/app.min.js";fjs.parentNode.appendChild(js);}(window, document, 'script', 'webpushr-jssdk'));webpushr('setup', { 'key': 'BNHhRkpgadW9XPNxWyxzTL_Jy3OXy2raAdzo8s-K00Q01uLWLB4faZL3JXNL2WGQBz9Agd74cu2rQ7F57ItBCZs' });</script></body></html><div id="chianago-widget" style="position:fixed;bottom:10px;right:10px;"></div><script>function initChianogoWidget() {
+new SakanaWidget().setState({}).mount('#chianago-widget');
+}</script><script async="" onload="initChianogoWidget()" src="https://cdn.jsdelivr.net/npm/sakana-widget@2.2.1/lib/sakana.min.js"></script><div id="sakana-widget" style="position:fixed;bottom:10px;left:10px;"></div><script>function initSakanaWidget() {
+const takina = SakanaWidget.getCharacter('takina');
+takina.initialState = {
+   ...takina.initialState,
+   };
+  SakanaWidget.registerCharacter('takina', takina);
+  new SakanaWidget({ character: 'takina' }).mount('#sakana-widget');
+}</script><script async="" onload="initSakanaWidget()" src="https://cdn.jsdelivr.net/npm/sakana-widget@2.2.1/lib/sakana.min.js"></script>
