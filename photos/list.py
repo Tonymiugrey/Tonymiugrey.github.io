@@ -1,5 +1,6 @@
 import os
 import datetime
+from urllib.parse import quote
 
 def get_time_from_filename(filename):
     print(filename)
@@ -14,15 +15,23 @@ def generate_report(directory_path, output_file):
     files = [f for f in os.listdir(directory_path) if f not in [".DS_Store", "list.py", "index.md", "output.txt"] and os.path.isfile(os.path.join(directory_path, f))]
     
     # 根据文件名中的时间排序文件列表
-    sorted_files = sorted(files, key=get_time_from_filename)
+    sorted_files = sorted(files, key=get_time_from_filename, reverse=True)
     
     path_name = directory_path.split("source")[-1]
 
     # 生成报告文件
     with open(directory_path+output_file, 'w') as report_file:
         for file_name in sorted_files:
-            print(f"![]({path_name+file_name})\n")
-            report_file.write(f"![]({path_name+file_name})\n")
+            encoded_file_name = quote(file_name)
+            print(f"![]({path_name+encoded_file_name})\n")
+            report_file.write(f"![]({path_name+encoded_file_name})\n")
 
 # 调用函数并传递目录路径和输出文件名
-generate_report('source/photos/5d2/', 'output.txt')
+generate_report('source/photos/1ii/photo/', 'output.txt')
+generate_report('source/photos/5d2/photo/', 'output.txt')
+generate_report('source/photos/a6000/photo/', 'output.txt')
+generate_report('source/photos/macau/photo/', 'output.txt')
+generate_report('source/photos/s10/photo/', 'output.txt')
+generate_report('source/photos/s23u/photo/', 'output.txt')
+generate_report('source/photos/singapore/photo/', 'output.txt')
+generate_report('source/photos/xr/photo/', 'output.txt')
