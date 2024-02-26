@@ -23,15 +23,15 @@ def generate_report(directory_path, output_file):
     with open(directory_path+output_file, 'w') as report_file:
         for file_name in sorted_files:
             encoded_file_name = quote(file_name)
-            print(f"![]({path_name+encoded_file_name})\n")
+            print(f"{'https://cdn.jsdelivr.net/gh/Tonymiugrey/miuGrey.com.cn'+path_name+encoded_file_name}\n")
             report_file.write(f"![]({'https://cdn.jsdelivr.net/gh/Tonymiugrey/miuGrey.com.cn'+path_name+encoded_file_name})\n")
 
 # 调用函数并传递目录路径和输出文件名
-generate_report('source/photos/1ii/photo/', 'output.txt')
-generate_report('source/photos/5d2/photo/', 'output.txt')
+#generate_report('source/photos/1ii/photo/', 'output.txt')
+#generate_report('source/photos/5d2/photo/', 'output.txt')
 generate_report('source/photos/a6000/photo/', 'output.txt')
-generate_report('source/photos/macau/photo/', 'output.txt')
-generate_report('source/photos/s10/photo/', 'output.txt')
+#generate_report('source/photos/macau/photo/', 'output.txt')
+#generate_report('source/photos/s10/photo/', 'output.txt')
 generate_report('source/photos/s23u/photo/', 'output.txt')
 generate_report('source/photos/singapore/photo/', 'output.txt')
-generate_report('source/photos/xr/photo/', 'output.txt')
+#generate_report('source/photos/xr/photo/', 'output.txt')
