@@ -24,7 +24,7 @@ def generate_report(directory_path, output_file):
         for file_name in sorted_files:
             encoded_file_name = quote(file_name)
             print(f"![]({path_name+encoded_file_name})\n")
-            report_file.write(f"![]({path_name+encoded_file_name})\n")
+            report_file.write(f"![]({'https://cdn.jsdelivr.net/gh/Tonymiugrey/miuGrey.com.cn'+path_name+encoded_file_name})\n")
 
 # 调用函数并传递目录路径和输出文件名
 generate_report('source/photos/1ii/photo/', 'output.txt')
